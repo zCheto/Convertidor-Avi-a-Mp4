@@ -9,7 +9,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 import imageio_ffmpeg
 FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
-PORT = 8080
+PORT = int(os.environ.get('PORT', 8080))
 
 class MobileConverterHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
