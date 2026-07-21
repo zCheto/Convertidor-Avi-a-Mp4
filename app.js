@@ -478,13 +478,17 @@ document.addEventListener('DOMContentLoaded', () => {
         resultCard.classList.remove('hidden');
         downloadListContainer.innerHTML = '';
 
+        const resultIconWrapper = document.getElementById('resultIconWrapper');
+        const resultTitle       = document.getElementById('resultTitle');
+        const resultSubtitle    = document.getElementById('resultSubtitle');
+
         const ext = audioOnly ? 'mp3' : 'mp4';
         let successCount = 0;
         let errorCount = 0;
 
         fileQueue.forEach((item, idx) => {
             const wrapper = document.createElement('div');
-            wrapper.style.marginBottom = '20px';
+            wrapper.className = 'result-item-wrapper';
 
             if (item.status === 'completed') {
                 successCount++;
@@ -493,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const dlBtn = document.createElement('a');
                 dlBtn.className = 'btn btn-success spring-item';
-                dlBtn.style.cssText = `animation-delay:${idx * 0.08}s; margin-bottom:10px;`;
+                dlBtn.style.cssText = `animation-delay:${idx * 0.08}s; margin-bottom:10px; width: 100%;`;
                 dlBtn.href = item.blobUrl;
                 dlBtn.download = outName;
                 dlBtn.innerHTML = `
@@ -533,6 +537,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
             downloadListContainer.appendChild(wrapper);
         });
+
+        // Set dynamic headers based on results
+        if (errorCount > 0 && successCount === 0) {
+            if (resultIconWrapper) {
+                resultIconWrapper.innerHTML = `
+                    <div class="error-icon-wrapper">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>`;
+            }
+            if (resultTitle) resultTitle.textContent = 'Error en la Conversión';
+            if (resultSubtitle) resultSubtitle.textContent = 'No se pudo procesar el archivo seleccionado.';
+        } else if (errorCount > 0 && successCount > 0) {
+            if (resultIconWrapper) {
+                resultIconWrapper.innerHTML = `
+                    <div class="warning-icon-wrapper">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>`;
+            }
+            if (resultTitle) resultTitle.textContent = 'Resultado de la Conversión';
+            if (resultSubtitle) resultSubtitle.textContent = 'Algunos videos se convirtieron correctamente y otros presentaron errores.';
+        } else {
+            if (resultIconWrapper) {
+                resultIconWrapper.innerHTML = `
+                    <div class="success-icon-wrapper">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>`;
+            }
+            if (resultTitle) resultTitle.textContent = '¡Videos Convertidos a MP4!';
+            if (resultSubtitle) resultSubtitle.textContent = 'Descarga tus videos directamente a la Galería de tu celular.';
+        }
 
         saveToHistory();
         initTilt();
