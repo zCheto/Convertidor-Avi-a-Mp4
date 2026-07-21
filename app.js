@@ -548,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </svg>
                         <span>Error al convertir "${item.file.name}"</span>
                     </div>
-                    <p class="error-card-body">No se pudo procesar este archivo. Verifica que sea un video .AVI válido y no supere el tamaño recomendado (150 MB).</p>
+                    <p class="error-card-body">No se pudo procesar este archivo. Por favor verifica que sea un video .AVI válido.</p>
                 `;
                 wrapper.appendChild(errBox);
             }
