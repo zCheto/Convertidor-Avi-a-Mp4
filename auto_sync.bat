@@ -7,6 +7,7 @@ echo ==================================================
 git add .
 git commit -m "Actualizacion automatica de archivos - By Kiev"
 git push origin master
+git push origin main
 
 echo.
 echo ==================================================
