@@ -6,19 +6,19 @@ Aplicacion web moderna y ultrarrapida para la conversion de archivos de video `.
 
 ## Características Principales
 
-- **Recodificación H.264 / AAC:** Convierte videos antiguos `.AVI` a un formato 100% compatible con todos los reproductores de celulares Android y Apple sin errores de códec.
-- **Diseño Cristal Acrílico (Glassmorphism):** Interfaz futurista basada en tarjetas translúcidas, efectos de desenfoque y tipografía nítida.
-- **Animaciones a 60 FPS:** Motor de nieve de partículas interactivo en canvas, rastro de destellos al tocar la pantalla y animaciones de resorte.
-- **Reproductor de Prueba Integrado:** Permite verificar la reproducción completa y la calidad del video antes de descargarlo.
-- **Descargas Directas a Galería:** Sin necesidad de descomprimir archivos `.ZIP` en dispositivos móviles.
-- **Procesamiento por Lotes:** Permite cargar y convertir múltiples archivos de video simultáneamente.
+- **Recodificación H.264 / AAC:** Convierte videos `.AVI` a formato `.MP4` universalmente compatible con Android, iPhone, Smart TV y cualquier reproductor moderno, eliminando errores de códec.
+- **Compatibilidad Total con Celulares:** Los videos convertidos se guardan directamente en la galería del dispositivo sin necesidad de aplicaciones adicionales ni descompresión de archivos `.ZIP`.
+- **Procesamiento por Lotes:** Permite seleccionar y convertir múltiples archivos `.AVI` de forma simultánea en una sola sesión.
+- **Reproductor de Verificación Integrado:** Reproduce el video convertido directamente en la pantalla de resultados para confirmar la calidad antes de guardarlo.
+- **Sin Instalación para el Usuario Final:** Funciona completamente desde el navegador web del celular, sin necesidad de descargar ni instalar ninguna aplicación.
+- **Privacidad Total:** Los archivos se procesan localmente en el servidor y no se almacenan ni envían a servicios externos.
 
 ---
 
 ## Tecnologías Utilizadas
 
-- **Frontend:** HTML5, CSS3 Vanilla (Glassmorphic System), JavaScript ES6+ (Canvas Particle Engine).
-- **Backend / Transcoding:** Python 3 (HTTP Server), FFmpeg CLI (H.264 / AAC Encoding).
+- **Frontend:** HTML5, CSS3 Vanilla, JavaScript ES6+.
+- **Backend / Transcoding:** Python 3 (HTTP Server), FFmpeg (H.264 / AAC Encoding).
 
 ---
 
