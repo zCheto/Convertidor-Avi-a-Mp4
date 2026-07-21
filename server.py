@@ -83,8 +83,8 @@ class MobileConverterHandler(SimpleHTTPRequestHandler):
             self.send_error(404, "Not Found")
 
 if __name__ == "__main__":
-    os.chdir(r"C:\Users\PC\.gemini\antigravity-ide\scratch\avi-to-mp4-converter")
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     server_address = ('', PORT)
     httpd = HTTPServer(server_address, MobileConverterHandler)
-    print(f"🚀 Servidor Móvil Activo en http://localhost:{PORT}")
+    print(f"Servidor activo en puerto {PORT}")
     httpd.serve_forever()
