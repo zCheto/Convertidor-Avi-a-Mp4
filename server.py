@@ -3,14 +3,26 @@ import sys
 import re
 import subprocess
 import tempfile
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 sys.stdout.reconfigure(encoding='utf-8')
 
 import imageio_ffmpeg
 FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
 PORT = int(os.environ.get('PORT', 8080))
-CHUNK_SIZE = 64 * 1024  # 64 KB buffer para streaming sin saturar RAM
+CHUNK_SIZE = 64 * 1024             # Buffer de 64 KB para Streaming
+MAX_FILE_SIZE = 250 * 1024 * 1024  # Límite máximo de 250 MB por archivo (Error 413)
+
+def sanitize_filename(name):
+    """
+    Sanitiza el nombre del archivo dejando únicamente caracteres alfanuméricos,
+    puntos, guiones y guiones bajos para prevenir Inyección de Cabeceras (Response Splitting).
+    """
+    if not name:
+        return "video.avi"
+    clean_name = os.path.basename(name)
+    clean_name = re.sub(r'[^\w.-]', '_', clean_name)
+    return clean_name if clean_name else "video.avi"
 
 def parse_and_stream_upload(rfile, content_length, boundary_bytes, dest_file_path):
     """
@@ -20,7 +32,7 @@ def parse_and_stream_upload(rfile, content_length, boundary_bytes, dest_file_pat
     boundary_marker = b'--' + boundary_bytes
     remaining = content_length
     buffer = b""
-    file_name = "video.avi"
+    raw_file_name = "video.avi"
 
     # 1. Leer hasta encontrar el final de las cabeceras multipart (\r\n\r\n)
     while b"\r\n\r\n" not in buffer and remaining > 0:
@@ -40,9 +52,11 @@ def parse_and_stream_upload(rfile, content_length, boundary_bytes, dest_file_pat
     fn_match = re.search(rb'filename="([^"]+)"', headers_part)
     if fn_match:
         try:
-            file_name = fn_match.group(1).decode('utf-8', 'ignore')
+            raw_file_name = fn_match.group(1).decode('utf-8', 'ignore')
         except Exception:
             pass
+
+    file_name = sanitize_filename(raw_file_name)
 
     # 2. Escribir los datos binarios directamente al archivo en bloques
     safe_buffer_len = len(boundary_marker) + 128
@@ -50,7 +64,6 @@ def parse_and_stream_upload(rfile, content_length, boundary_bytes, dest_file_pat
         while True:
             idx = buffer.find(boundary_marker)
             if idx != -1:
-                # Se encontró el límite del archivo
                 write_bytes = buffer[:idx]
                 if write_bytes.endswith(b"\r\n"):
                     write_bytes = write_bytes[:-2]
@@ -93,6 +106,13 @@ class MobileConverterHandler(SimpleHTTPRequestHandler):
                 content_length = int(self.headers.get('Content-Length', 0))
                 content_type = self.headers.get('Content-Type', '')
 
+                # 🛑 1. Rechazar peticiones que excedan el límite máximo de tamaño (Error 413)
+                if content_length > MAX_FILE_SIZE:
+                    max_mb = MAX_FILE_SIZE // (1024 * 1024)
+                    print(f"  ❌ Rechazado (Error 413): Archivo de {content_length / (1024*1024):.1f} MB excede el límite de {max_mb} MB.")
+                    self.send_error(413, f"Payload Too Large: El archivo excede el limite maximo de {max_mb} MB")
+                    return
+
                 if 'boundary=' not in content_type:
                     self.send_error(400, "No boundary found in Content-Type")
                     return
@@ -103,12 +123,12 @@ class MobileConverterHandler(SimpleHTTPRequestHandler):
                     in_path = os.path.join(tmpdir, "input.avi")
                     out_path = os.path.join(tmpdir, "output.mp4")
 
-                    # 1. Recepción en Streaming (escribe a disco en bloques de 64 KB)
+                    # Recepción en Streaming (escribe a disco en bloques de 64 KB)
                     file_name = parse_and_stream_upload(self.rfile, content_length, boundary_bytes, in_path)
                     uploaded_mb = os.path.getsize(in_path) / (1024 * 1024)
                     print(f"[Streaming Mode] Recibido: {file_name} ({uploaded_mb:.2f} MB)...")
 
-                    # 2. Conversión mediante FFmpeg
+                    # ⚡ 2. Conversión mediante FFmpeg con Timeout (300 s)
                     cmd = [
                         FFMPEG_EXE, "-y", "-err_detect", "ignore_err",
                         "-i", in_path,
@@ -118,12 +138,18 @@ class MobileConverterHandler(SimpleHTTPRequestHandler):
                         out_path
                     ]
 
-                    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                    try:
+                        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=300)
+                    except subprocess.TimeoutExpired:
+                        print(f"  ❌ Timeout (Error 504): Conversión de {file_name} cancelada tras 300 segundos.")
+                        self.send_error(504, "Gateway Timeout: La conversion excedio el tiempo limite de 300 segundos.")
+                        return
 
-                    # 3. Envío del resultado en Streaming (bloques de 64 KB sin cargar en RAM)
+                    # 🛡️ 3. Envío del resultado sanitizado en Streaming
                     if os.path.exists(out_path) and os.path.getsize(out_path) > 100:
                         file_size = os.path.getsize(out_path)
-                        out_name = f"{os.path.splitext(file_name)[0]}.mp4"
+                        base_clean = sanitize_filename(os.path.splitext(file_name)[0])
+                        out_name = f"{base_clean}.mp4"
 
                         self.send_response(200)
                         self.send_header('Content-Type', 'video/mp4')
@@ -151,6 +177,7 @@ class MobileConverterHandler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     server_address = ('', PORT)
-    httpd = HTTPServer(server_address, MobileConverterHandler)
-    print(f"Servidor activo con Streaming I/O en puerto {PORT}")
+    # ⚡ Servidor Multihilo (ThreadingHTTPServer) para procesar múltiples peticiones simultáneas
+    httpd = ThreadingHTTPServer(server_address, MobileConverterHandler)
+    print(f"Servidor activo con ThreadingHTTPServer y Streaming I/O en puerto {PORT}")
     httpd.serve_forever()
