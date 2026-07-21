@@ -690,7 +690,14 @@ body {
     transform: translateY(-2px);
 }
 
-.q-icon { font-size: 1.4rem; }
+.q-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.65);
+}
 .q-name { font-size: 0.88rem; font-weight: 700; color: #ffffff !important; }
 .q-desc { font-size: 0.7rem; color: rgba(255,255,255,0.65) !important; line-height: 1.3; }
 

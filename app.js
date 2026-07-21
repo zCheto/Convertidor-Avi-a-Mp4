@@ -519,8 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const n = fileQueue.length;
         showToast(
-            `¡${n} video${n > 1 ? 's' : ''} convertido${n > 1 ? 's' : ''}! 🎉`,
-            `Calidad: ${selectedQuality === 'high' ? 'Alta ⭐' : selectedQuality === 'medium' ? 'Media ⚡' : 'Comprimida 🗜️'}`,
+            `${n} video${n > 1 ? 's' : ''} convertido${n > 1 ? 's' : ''} correctamente`,
+            `Calidad: ${selectedQuality === 'high' ? 'Alta' : selectedQuality === 'medium' ? 'Media' : 'Comprimida'}`,
             'success'
         );
     }
