@@ -1,78 +1,96 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ═══════════════════════════════════════════════════════════
-    // ❄️  SNOW + SPARKLE ENGINE (60FPS)
+    // ❄️  SNOW + SPARKLE ENGINE (HARDWARE ACCELERATED 60FPS)
     // ═══════════════════════════════════════════════════════════
     const canvas = document.getElementById('snowCanvas');
     if (canvas) {
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: true });
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
         let windX = 0;
+        let lastMove = 0;
 
         window.addEventListener('resize', () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
         });
-        window.addEventListener('mousemove', (e) => {
-            windX = ((e.clientX / width) - 0.5) * 1.5;
-            spawnSparkle(e.clientX, e.clientY);
-        });
-        window.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                const t = e.touches[0];
-                windX = ((t.clientX / width) - 0.5) * 2;
-                spawnSparkle(t.clientX, t.clientY);
+
+        const handleMove = (x, y) => {
+            windX = ((x / width) - 0.5) * 1.2;
+            const now = Date.now();
+            if (now - lastMove > 40) {
+                spawnSparkle(x, y);
+                lastMove = now;
             }
+        };
+
+        window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY), { passive: true });
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) handleMove(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: true });
 
-        const numFlakes = Math.min(90, Math.floor(width / 14));
+        const numFlakes = Math.min(45, Math.floor(width / 25));
         const flakes = [];
         for (let i = 0; i < numFlakes; i++) {
             flakes.push({
-                x: Math.random() * width, y: Math.random() * height,
-                radius: Math.random() * 2.8 + 1,
-                speedY: Math.random() * 0.9 + 0.3,
-                speedX: Math.random() * 0.4 - 0.2,
-                opacity: Math.random() * 0.75 + 0.25
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 2.2 + 1,
+                speedY: Math.random() * 0.7 + 0.3,
+                speedX: Math.random() * 0.3 - 0.15,
+                opacity: Math.random() * 0.6 + 0.2
             });
         }
 
         const sparkles = [];
         function spawnSparkle(x, y) {
-            if (sparkles.length < 40) {
+            if (sparkles.length < 20) {
                 sparkles.push({
-                    x: x + (Math.random() * 10 - 5), y: y + (Math.random() * 10 - 5),
-                    radius: Math.random() * 3 + 2,
-                    color: Math.random() > 0.5 ? '#c084fc' : '#f472b6',
-                    life: 1, decay: Math.random() * 0.04 + 0.02,
-                    vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5
+                    x: x + (Math.random() * 8 - 4),
+                    y: y + (Math.random() * 8 - 4),
+                    radius: Math.random() * 2.5 + 1.5,
+                    color: Math.random() > 0.5 ? 'rgba(192, 132, 252,' : 'rgba(244, 114, 182,',
+                    life: 1,
+                    decay: Math.random() * 0.05 + 0.03,
+                    vx: (Math.random() - 0.5) * 1.2,
+                    vy: (Math.random() - 0.5) * 1.2
                 });
             }
         }
 
         function renderScene() {
             ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = '#ffffff';
+
+            // Render flakes efficiently
             for (let i = 0; i < numFlakes; i++) {
                 const f = flakes[i];
-                ctx.save(); ctx.globalAlpha = f.opacity;
-                ctx.beginPath(); ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2); ctx.fill();
-                ctx.restore();
-                f.y += f.speedY; f.x += f.speedX + windX * 0.5;
+                ctx.fillStyle = `rgba(255,255,255,${f.opacity})`;
+                ctx.beginPath();
+                ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                f.y += f.speedY;
+                f.x += f.speedX + windX * 0.4;
                 if (f.y > height) { f.y = -10; f.x = Math.random() * width; }
                 if (f.x > width) f.x = 0;
                 if (f.x < 0) f.x = width;
             }
+
+            // Render sparkles without expensive shadowBlur
             for (let i = sparkles.length - 1; i >= 0; i--) {
                 const p = sparkles[i];
-                ctx.save(); ctx.globalAlpha = p.life; ctx.fillStyle = p.color;
-                ctx.shadowBlur = 8; ctx.shadowColor = p.color;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
-                ctx.restore();
-                p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+                ctx.fillStyle = `${p.color}${p.life})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
                 if (p.life <= 0) sparkles.splice(i, 1);
             }
+
             requestAnimationFrame(renderScene);
         }
         renderScene();
