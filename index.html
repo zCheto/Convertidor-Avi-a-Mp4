@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Convertidor AVI a MP4</title>
+    <meta name="description" content="Convertidor de video AVI a MP4 profesional con procesamiento ultrarrápido y compatibilidad móvil universal.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-animesnow" id="appBody">
+    <div class="custom-bg-layer active" id="customBgLayer" style="background-image: url('bg-anime-snow.jpg');"></div>
+    <canvas id="snowCanvas" class="snow-canvas"></canvas>
+    
+    <div class="background-decorations" id="bgDecorations">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="container">
+        <header class="app-header animated-fade-in">
+            <h1>Convertidor <span class="gradient-text glow-text">AVI a MP4</span></h1>
+            <p class="subtitle">Convierte tus videos .avi a .mp4</p>
+        </header>
+
+        <!-- Upload Card -->
+        <section class="card upload-card animated-card" id="uploadCard">
+            <div class="drop-zone" id="dropZone">
+                <input type="file" id="fileInput" accept=".avi,video/x-msvideo,video/*" multiple class="file-input">
+                <div class="drop-icon-wrapper float-bounce">
+                    <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </div>
+                <h3>Toca aquí para seleccionar tus videos .AVI</h3>
+                <p><span class="browse-btn">Explorar archivos de tu dispositivo</span></p>
+            </div>
+        </section>
+
+        <!-- Batch Files Queue Card -->
+        <section class="card batch-card animated-card hidden" id="batchCard">
+            <div class="batch-header">
+                <div>
+                    <h3>Videos seleccionados (<span id="fileCountBadge">0</span>)</h3>
+                    <p class="file-size" id="totalSizeText">Tamaño: 0 MB</p>
+                </div>
+                <button class="btn-secondary-sm" id="clearAllBtn">Borrar Todo</button>
+            </div>
+
+            <div class="file-queue-list" id="fileQueueList"></div>
+
+            <div class="batch-actions">
+                <button class="btn btn-primary ripple-btn" id="startBatchBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <span>Convertir a MP4 Ahora</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Progress Card -->
+        <section class="card progress-card animated-card hidden" id="progressCard">
+            <div class="conversion-status">
+                <div class="spinner-wrapper">
+                    <div class="spinner"></div>
+                </div>
+                <h3 id="statusTitle">Procesando video...</h3>
+                <p id="statusSubtitle">Convertidos <span id="completedCount">0</span> de <span id="totalQueueCount">0</span></p>
+            </div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar shimmer-effect" id="progressBar"></div>
+            </div>
+            <div class="progress-labels">
+                <span id="progressPercent">0%</span>
+                <span id="currentFileName">Procesando...</span>
+            </div>
+        </section>
+
+        <!-- Result Card -->
+        <section class="card result-card animated-card hidden" id="resultCard">
+            <div class="success-icon-wrapper scale-pop">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <h2>¡Videos Convertidos a MP4!</h2>
+            <p>Descarga tus videos directamente a la Galería de tu celular.</p>
+
+            <div class="result-actions" id="downloadListContainer"></div>
+
+            <div style="margin-top: 15px;">
+                <button class="btn btn-secondary" id="convertMoreBtn">Convertir Otros Videos</button>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE VENTAJAS Y FLORO TÉCNICO -->
+        <section class="card feature-section animated-card" style="margin-top: 24px;">
+            <h3 class="section-heading">¿Por qué usar este Convertidor de Video?</h3>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h4>Procesamiento Ultra Rápido</h4>
+                    <p>Utiliza codificación acelerada por hardware de última generación para transformar archivos de gran tamaño en tiempo récord sin demoras.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>100% Compatible con Celulares</h4>
+                    <p>Los videos se recodifican usando el estándar H.264 + AAC, garantizando reproducción inmediata en cualquier Android, iPhone, tablet o Smart TV.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Privacidad y Seguridad</h4>
+                    <p>Tus videos son procesados con la máxima seguridad y se eliminan temporalmente sin almacenar nada en servidores externos.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Sin Pérdida de Calidad</h4>
+                    <p>Conserva la nitidez original de imagen, tasa de fotogramas (FPS) y audio multicanal mientras optimiza el peso del archivo.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- GUÍA PASO A PASO -->
+        <section class="card steps-section animated-card" style="margin-top: 24px;">
+            <h3 class="section-heading">¿Cómo convertir tus videos en 3 pasos sencillos?</h3>
+            <div class="steps-list">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-text">
+                        <h4>Selecciona tus archivos .AVI</h4>
+                        <p>Toca el recuadro principal o arrastra los videos que deseas convertir desde tu Galería o carpetas del dispositivo.</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-text">
+                        <h4>Inicia la conversión instantánea</h4>
+                        <p>Presiona el botón de conversión y nuestro motor de recodificación procesará el video completo a formato H.264.</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-text">
+                        <h4>Prueba y Descarga a tu Galería</h4>
+                        <p>Reproduce el video en la pantalla de prueba para verificar su calidad y guárdalo directamente con un solo toque.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE INFORMACIÓN SOBRE FORMATOS AVI Y MP4 -->
+        <section class="card info-card animated-card" style="margin-top: 24px;">
+            <h3 class="info-title">¿Conoces la diferencia entre los formatos?</h3>
+            
+            <div class="format-info-grid">
+                <div class="format-info-box">
+                    <div class="format-header-badge avi-badge">Formato .AVI</div>
+                    <p><strong>Audio Video Interleave:</strong> Desarrollado por Microsoft en 1992. Es un formato clásico pero antiguo que suele pesar mucho espacio y utiliza códecs raros que los celulares modernos no pueden reproducir sin recodificar.</p>
+                </div>
+
+                <div class="format-info-box">
+                    <div class="format-header-badge mp4-badge">Formato .MP4</div>
+                    <p><strong>MPEG-4 Part 14:</strong> El estándar de video universal en todo el mundo. Comprime el video con alta calidad en poco espacio (H.264/AAC), siendo 100% compatible con Android, iPhone, Smart TVs y redes sociales.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="app-footer animated-fade-in">
+            <div class="author-credits">By Kiev</div>
+        </footer>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
