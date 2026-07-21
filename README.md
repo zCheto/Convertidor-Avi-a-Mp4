@@ -1,4 +1,4 @@
-# Convertidor AVI a MP4 (Por Kiev)
+# Convertidor AVI a MP4
 
 Aplicación web moderna y ultrarrápida para la conversión de archivos de video `.AVI` a formato universal `.MP4` (H.264/AAC), optimizada para dispositivos móviles Android, iOS y computadoras.
 
