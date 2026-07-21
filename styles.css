@@ -1064,3 +1064,52 @@ body {
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Size Limit Notice in Dropzone */
+.size-limit-notice {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.55) !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.size-limit-notice svg {
+    flex-shrink: 0;
+    color: rgba(192, 132, 252, 0.8);
+}
+
+/* Error Result Card */
+.error-card-item {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.32);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    text-align: left;
+    backdrop-filter: blur(8px);
+}
+.error-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #f87171;
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+}
+.error-card-header svg {
+    flex-shrink: 0;
+    stroke: #f87171;
+}
+.error-card-body {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.7) !important;
+    margin: 0;
+    line-height: 1.45;
+}

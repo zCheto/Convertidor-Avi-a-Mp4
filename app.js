@@ -416,11 +416,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.outputSize = resultBlob.size;
                 item.status     = 'completed';
             } catch (err) {
-                console.warn('API error, using original:', err);
-                item.blob       = item.file;
-                item.blobUrl    = URL.createObjectURL(item.file);
-                item.outputSize = item.file.size;
-                item.status     = 'completed';
+                console.error('Error durante la conversión:', err);
+                item.status   = 'error';
+                item.errorMsg = err.message || 'Fallo en la respuesta del servidor';
             }
 
             completedCount.textContent = i + 1;
@@ -468,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (xhr.status === 200) { onProgress(100); resolve(xhr.response); }
                 else reject(new Error(`HTTP ${xhr.status}`));
             };
-            xhr.onerror = () => reject(new Error('Network error'));
+            xhr.onerror = () => reject(new Error('Error de red o conexión perdida'));
             xhr.responseType = 'blob';
             xhr.open('POST', '/api/convert');
             xhr.send(form);
@@ -481,34 +479,56 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadListContainer.innerHTML = '';
 
         const ext = audioOnly ? 'mp3' : 'mp4';
+        let successCount = 0;
+        let errorCount = 0;
 
         fileQueue.forEach((item, idx) => {
-            const baseName = item.file.name.replace(/\.[^/.]+$/, '');
-            const outName  = `${baseName}.${ext}`;
-
             const wrapper = document.createElement('div');
             wrapper.style.marginBottom = '20px';
 
-            const dlBtn = document.createElement('a');
-            dlBtn.className = 'btn btn-success spring-item';
-            dlBtn.style.cssText = `animation-delay:${idx * 0.08}s; margin-bottom:10px;`;
-            dlBtn.href = item.blobUrl;
-            dlBtn.download = outName;
-            dlBtn.innerHTML = `
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                <span>Descargar ${outName}</span>`;
+            if (item.status === 'completed') {
+                successCount++;
+                const baseName = item.file.name.replace(/\.[^/.]+$/, '');
+                const outName  = `${baseName}.${ext}`;
 
-            wrapper.appendChild(dlBtn);
+                const dlBtn = document.createElement('a');
+                dlBtn.className = 'btn btn-success spring-item';
+                dlBtn.style.cssText = `animation-delay:${idx * 0.08}s; margin-bottom:10px;`;
+                dlBtn.href = item.blobUrl;
+                dlBtn.download = outName;
+                dlBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Descargar ${outName}</span>`;
 
-            if (!audioOnly) {
-                const vid = document.createElement('video');
-                vid.src = item.blobUrl; vid.controls = true;
-                vid.style.cssText = 'width:100%;border-radius:12px;max-height:220px;';
-                wrapper.appendChild(vid);
+                wrapper.appendChild(dlBtn);
+
+                if (!audioOnly) {
+                    const vid = document.createElement('video');
+                    vid.src = item.blobUrl; vid.controls = true;
+                    vid.style.cssText = 'width:100%;border-radius:12px;max-height:220px;';
+                    wrapper.appendChild(vid);
+                }
+            } else {
+                errorCount++;
+                const errBox = document.createElement('div');
+                errBox.className = 'error-card-item spring-item';
+                errBox.style.cssText = `animation-delay:${idx * 0.08}s;`;
+                errBox.innerHTML = `
+                    <div class="error-card-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>Error al convertir "${item.file.name}"</span>
+                    </div>
+                    <p class="error-card-body">No se pudo procesar este archivo. Verifica que sea un video .AVI válido y no supere el tamaño recomendado (150 MB).</p>
+                `;
+                wrapper.appendChild(errBox);
             }
 
             downloadListContainer.appendChild(wrapper);
@@ -517,12 +537,25 @@ document.addEventListener('DOMContentLoaded', () => {
         saveToHistory();
         initTilt();
 
-        const n = fileQueue.length;
-        showToast(
-            `${n} video${n > 1 ? 's' : ''} convertido${n > 1 ? 's' : ''} correctamente`,
-            `Calidad: ${selectedQuality === 'high' ? 'Alta' : selectedQuality === 'medium' ? 'Media' : 'Comprimida'}`,
-            'success'
-        );
+        if (errorCount === 0) {
+            showToast(
+                `${successCount} video${successCount > 1 ? 's' : ''} convertido${successCount > 1 ? 's' : ''} correctamente`,
+                `Calidad: ${selectedQuality === 'high' ? 'Alta' : selectedQuality === 'medium' ? 'Media' : 'Comprimida'}`,
+                'success'
+            );
+        } else if (successCount > 0) {
+            showToast(
+                `Conversión finalizada con advertencias`,
+                `${successCount} convertidos, ${errorCount} con error`,
+                'info'
+            );
+        } else {
+            showToast(
+                `Error en la conversión`,
+                `No se pudo procesar ningún archivo de la lista`,
+                'error'
+            );
+        }
     }
 
     // ═══════════════════════════════════════════════════════════
